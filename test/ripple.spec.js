@@ -13,9 +13,9 @@ describe('ripple.js',function() {
 
     afterEach(() => {
         // cleanup on exiting
-        // unmountComponentAtNode(container);
-        // container.remove();
-        // container = null;
+        unmountComponentAtNode(container);
+        container.remove();
+        container = null;
     });
 
     it('can set isCenter prop',function() {
