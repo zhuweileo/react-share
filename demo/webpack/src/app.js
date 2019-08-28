@@ -2,6 +2,7 @@ import React from 'react'
 import {hot} from 'react-hot-loader'
 
 import RippleDemo from './ripple/RippleDemo'
+import ButtonDemo from './button/ButtonDemo'
 
 class App extends React.Component {
   constructor() {
@@ -12,6 +13,7 @@ class App extends React.Component {
     return (
       <div>
         <RippleDemo/>
+        <ButtonDemo/>
       </div>
 
     )
