@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>react-demo</title>
+  <link rel="stylesheet" href="../../dist/index.css">
+</head>
+<body>
+<div id="app"></div>
+
+<script src="./lib/react.development.js" crossorigin></script>
+<script src="./lib/react-dom.development.js" crossorigin></script>
+<script src="./lib/babel.min.js"></script>
+<script src="../../dist/index.js"></script>
+<script type="text/babel">
+  'use strict';
+  const {Ripple} = zwReactCom;
+  const domContainer = document.querySelector('#app');
+  function App() {
+    return (
+      <Ripple isCenter={false}>
+        <button style={{
+          backgroung: '#ccc',
+          lineHeight: '2em',
+          borderRadius: '4px',
+          border: 'none',
+          fontSize: '18px',
+          padding: '0 2em',
+          cursor: 'pointer'
+        }}>click</button>
+      </Ripple>
+    )
+  }
+  ReactDOM.render(<App/>, domContainer);
+</script>
+
+</body>
+</html>

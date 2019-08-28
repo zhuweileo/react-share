@@ -1,0 +1,21 @@
+.zw-ripple-box{
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+.zw-ripple-circle{
+  position: absolute;
+  background: rgba(#f0f,0.7);
+  border-radius: 50%;
+  transform: scale(0);
+  animation: zw-ripple 0.5s linear;
+
+}
+
+@keyframes zw-ripple {
+  to{
+    transform:scale(2);
+    opacity: 0;
+  }
+}
