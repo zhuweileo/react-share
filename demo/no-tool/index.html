@@ -14,21 +14,11 @@
 <script src="../../dist/index.js"></script>
 <script type="text/babel">
   'use strict';
-  const {Ripple} = zwReactCom;
+  const {Button} = zwReactCom;
   const domContainer = document.querySelector('#app');
   function App() {
     return (
-      <Ripple isCenter={false}>
-        <button style={{
-          backgroung: '#ccc',
-          lineHeight: '2em',
-          borderRadius: '4px',
-          border: 'none',
-          fontSize: '18px',
-          padding: '0 2em',
-          cursor: 'pointer'
-        }}>click</button>
-      </Ripple>
+        <Button>按钮</Button>
     )
   }
   ReactDOM.render(<App/>, domContainer);

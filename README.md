@@ -1,20 +1,16 @@
 # 前言
 
-前一段时间利用空闲时间学习了一下**vue组件的封装**，也在工作中进行了实践，将公司常用的一个api抽象成了vue组件，并发布在npm上。之前觉得组件的封装是一件很困难的事情，通过亲身体验之后，发现确实有很多需要注意的地方，但是当自己真正走完了这个过程之后，回头看的时候，其实也不过如此。真正困难的其实不是组件封装的**流程与步骤**，而是组件的实现思想。但是，对于没有进行过组件封装的同学来说，流程和步骤确实也存在着许多坑，但是一旦你趟过去之后，就会非常轻松。
-
-我的学习渠道主要来源于两个地方，一个是vue官方文档cookbook中一篇介绍[组件封装的文章](https://vuejs.org/v2/cookbook/packaging-sfc-for-npm.html)，另一个是饥人谷的一门课程。
-
 我将通过一系列文章去讲一下整个组件封装的过程中我是如何做的，文章会围绕一个简易组件的封装过程去写，这个组件并不具有实际用处，只是一个demo。希望通过几篇文章，给那些想自己封装组件的同学做一个参考。
 
 ## demo地址
 
-https://github.com/zhuweileo/vue-component-demo
+https://github.com/zhuweileo/react-share
 
 ## 需求分析
 
 我们的需求如下：
 
-- 写一个button.vue组件
+- 写一个button组件
 
   ps：由于是为了学习封装步骤，所以这里button组件的功能十分简单。
 
@@ -38,18 +34,14 @@ https://github.com/zhuweileo/vue-component-demo
 
 ## 为什么要打包
 
-可能你会问为什么要对.vue文件进行打包，直接引用.vue文件不可以么？当然可以，但是前提是用户有自己的打包工具可以处理.vue文件，如果用户没有打包工具，你的组件是不是就不能用了呢！
+可能你会问为什么要对.js/.jsx文件进行打包，直接引用.js/.jsx文件不可以么？当然可以，但是前提是用户有自己的打包工具可以处理.js/.jsx文件，如果用户没有打包工具，你的组件是不是就不能用了呢！
 
 不打包，你只能这么用
 
-```js
-import MyComponent from 'my-component';
-
-export default {
-  components: {
-    MyComponent,
-  },
-  // rest of the component
+```jsx
+import {Button} from 'my-component'
+function App(){
+    return <Button></Button>
 }
 ```
 
@@ -60,36 +52,34 @@ export default {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>react-demo</title>
+  <link rel="stylesheet" href="../../dist/index.css">
 </head>
 <body>
-<div id="app">
-  {{text}}
-  <m-button>nio</m-button>
-</div>
+<div id="app"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-<script src="../dist/index.js"></script>
-<script>
-  console.log(MyComponent);
-  const {MButton} = MyComponent;
-  const app = new Vue({
-    el:'#app',
-    data:{
-      text: 'hello vue!',
-    },
-    components:{
-      'm-button':MButton,
-    }
-  })
+<script src="./lib/react.development.js" crossorigin></script>
+<script src="./lib/react-dom.development.js" crossorigin></script>
+<script src="./lib/babel.min.js"></script>
+<script src="../../dist/index.js"></script>
+<script type="text/babel">
+  'use strict';
+  const {Button} = zwReactCom;
+  const domContainer = document.querySelector('#app');
+  function App() {
+    return (
+        <Button>按钮</Button>
+    )
+  }
+  ReactDOM.render(<App/>, domContainer);
 </script>
+
 </body>
 </html>
+
 ```
 
 
-
-组件的封装肯定离不开打包工具，打包工具大家最熟悉的一定非webpack莫属了。其实，在vue官方文档中的cookbook中，文章的作者推荐使用的 打包工具是[Rollup](https://rollupjs.org/guide/en)，并附有详细的配置文件，但是我之前对Rollup不熟悉，就没有用，有兴趣的同学可以自己尝试。
 
 ## webpack版本及文件具体内容
 
@@ -98,66 +88,57 @@ webpack版本：4.17.1 （比较新的版本）
 webpack.config.js
 
 ```js
-var path = require('path');
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
-var webpack = require('webpack')
+var path = require('path')
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
-    entry: {
-        'index': './src/index.js'
-    },
-    output: {
-        path: path.resolve(__dirname, './dist'),
-        filename: '[name].js',
-        library: 'MyComponent',
-        libraryTarget: 'umd'
-    },
-    devtool: '#eval-source-map',
-    resolve: {
-        alias: {
-            'vue$': 'vue/dist/vue.esm.js'
-        },
-        extensions: ['.js', '.vue']
-    },
-    mode: 'production',
-    performance: {
-        hints: false
-    },
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                exclude: /node_modules/,
-                use:{
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['@babel/preset-env'],
-                        "env": {
-                            "test": {
-                                "plugins": ["istanbul"]
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                test: /\.vue$/,
-                loader: 'vue-loader',
-                exclude: /node_modules/
-            },
-            {
-                test: /\.css$/,
-                use: [
-                    'vue-style-loader',
-                    'css-loader'
-                ]
-            }
+  entry: {
+    index: './src/index.js',
+  },
+  output: {
+    path: path.resolve(__dirname, './dist'),
+    filename: '[name].js',
+    library: 'zwReactCom',
+    libraryTarget: 'umd',
+  },
+  mode: 'production',
+  externals:{
+    react: {
+      commonjs: 'react',
+      commonjs2: 'react',
+      amd: 'react',
+      root: 'React' // indicates global variable
+    }
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use:{
+          loader: "babel-loader",
+        }
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          // fallback to style-loader in development
+          process.env.NODE_ENV === 'production'? MiniCssExtractPlugin.loader: 'style-loader',
+          "css-loader",
+          "sass-loader",
         ]
-    },
-    plugins: [
-        new VueLoaderPlugin()
+      },
     ]
-};
+  },
+  plugins: [
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: "[name].css",
+      chunkFilename: "[id].css"
+    })
+  ]
+}
 
 ```
 
@@ -178,10 +159,10 @@ module.exports = {
 index.js
 
 ```js
-export {default as MButton}  from './MButton.vue'
+export {default as Button} from './components/button/Button'
 ```
 
-入口文件的意思就是将`MButton.vue`文件中的默认导出值，重命名为MButton然后再导出。
+入口文件的意思就是将`Button.js`文件中的默认导出值，重命名为Button然后再导出。
 
 （对于export语法不理解的同学，推荐查看[阮一峰的es6相关教程](http://es6.ruanyifeng.com/#docs/module#export-%E5%91%BD%E4%BB%A4)）
 
@@ -222,62 +203,53 @@ mode: 'production'
 
 webpack4 新增的配置参数，意为webpack将认为该打包是为了生产环境，会将一些默认配置设置为生产环境所需要的，例如默认进行代码压缩。
 
+### externals
+
+```js
+  externals:{
+    react: {
+      commonjs: 'react',
+      commonjs2: 'react',
+      amd: 'react',
+      root: 'React' // indicates global variable
+    }
+  }
+```
+
+保证react 不会被打包到组件内。
+
 ### rules
 
 这里是重点，有三个规则
 
 1. 使用babel处理js，这样你就可以在vue单文件组件中的`script`标签内放心使用es6语法
 
+   ```js
+         {
+           test: /\.(js|jsx)$/,
+           exclude: /node_modules/,
+           use:{
+             loader: "babel-loader",
+           }
+         }
    ```
-    {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use:{
-            loader: 'babel-loader',
-            options: {
-                presets: ['@babel/preset-env'],
-                "env": {
-                    "test": {
-                        "plugins": ["istanbul"]
-                    }
-                }
-            }
-        }
-    },
+   
+   
+   
+3. 使用scss-loader处理scss样式
+
+   ```js
+         {
+           test: /\.scss$/,
+           use: [
+             // fallback to style-loader in development
+             process.env.NODE_ENV === 'production'? MiniCssExtractPlugin.loader: 'style-loader',
+             "css-loader",
+             "sass-loader",
+           ]
+         }
+   
    ```
-
-2. 使用vue-loader处理.vue文件。在webpack中每一种文件的处理都需要对应的loader，就像css需要css-loader，js文件需要babel-loader，vue文件也不例外。其实vue-loader就是将你写的单文件组件内的三个标签，转化为原生的js，具体原理查看[官方文档](https://vue-loader.vuejs.org/)。
-
-   ```
-    {
-        test: /\.vue$/,
-        loader: 'vue-loader',
-        exclude: /node_modules/
-    },
-   ```
-
-3. 使用css-loader处理和vue-style-loader处理单文件组件内`style`便签内的css样式
-
-   ```
-    {
-        test: /\.css$/,
-        use: [
-            'vue-style-loader',
-            'css-loader'
-        ]
-    }
-   ```
-
-### 使用vue-loader插件
-
-官方说必须使用VueLoaderPlugin配合vue-loader使用，具体为什么我也不清楚。
-
-```
-  plugins: [
-    // make sure to include the plugin for the magic
-    new VueLoaderPlugin()
-  ]
-```
 
 
 
@@ -293,7 +265,7 @@ webpack4 新增的配置参数，意为webpack将认为该打包是为了生产�
    {
    	  ...
    	  
-         "name": "vue-component-demo",//你的组件的名字
+         "name": "zhuwei-component",//你的组件的名字
          "version": "0.0.1",//当前版本号
          "description": "vue component demo",//描述
          "main": "dist/index.js",//入口文件
@@ -307,7 +279,7 @@ webpack4 新增的配置参数，意为webpack将认为该打包是为了生产�
   这样当用户向下面这样引入你的组件的时候，打包工具就会直接去`"main": "dist/index.js"`找文件。
 
   ```js
-  import {button} from 'vue-component-demo'
+  import {Button} from 'zhuwei-component'
   ```
 
 - `name`参数不能和npm上已有的组件名相同，否则发布的时候会报错，如果不幸有人用了这个组件名，你就需要修改一下，再重复这个流程重新发布就好了。
@@ -317,7 +289,7 @@ webpack4 新增的配置参数，意为webpack将认为该打包是为了生产�
 ## 登录npm（需要提前注册一个npm账号）
 
 ```shell
-   /vue-component-demo (master)
+   /zhuwei-component(master)
    $ npm adduser
    Username: 
    Password:
@@ -327,14 +299,14 @@ webpack4 新增的配置参数，意为webpack将认为该打包是为了生产�
 ## 发布组件
 
 ```
-   /vue-component-demo (master)
+   /zhuwei-component (master)
    $ npm publish
 ```
 
    至此，你的组件就已经发布到npm上了，别人就可以通过npm 安装你的组件，然后使用。
 
 ```
-   npm install vue-component-demo
+   npm install zhuwei-component
 ```
 
 ## 更新组件
@@ -366,9 +338,9 @@ webpack4 新增的配置参数，意为webpack将认为该打包是为了生产�
 
   官网：https://www.chaijs.com/
 
-- vue-test-utils：辅助测试vue组件
+- react-dom/test-utils：辅助测试react组件
 
-  官网：https://vue-test-utils.vuejs.org/zh/guides/
+  
 
 ## 安装工具
 
@@ -417,44 +389,59 @@ module.exports = function (config) {
 
 ## 写测试用例
 
-[/test/button.spec.js](https://github.com/zhuweileo/vue-component-demo/blob/master/test/button.spec.js)
+[/test/button.spec.js](https://github.com/zhuweileo/react-share/blob/master/test/button.spec.js)
 
 ```js
-import MButton from '../src/MButton'
-import {mount} from "@vue/test-utils";
-import Syn from 'syn'
+import React from 'react';
+import { render, unmountComponentAtNode } from "react-dom";
+import { act } from "react-dom/test-utils";
+import Button from "../src/components/button/Button";
 
-describe('MButton.vue',function () {
-
-  it('can set type prop',function () {
-    const wrapper = mount(MButton,{
-      propsData:{
-        type: 'warn',
-      }
-    });
-    const vm = wrapper.vm;
-    expect(vm.$el.classList.contains('warn')).to.be.true
-  })
-
-  it('can click',function (done) {
-    const click = sinon.spy();
-    const haha = sinon.spy();
-    const wrapper = mount(MButton,{
-      propsData:{
-        type: 'warn',
-      },
-      listeners:{
-        click,
-      }
+describe('Button.js',function() {
+    let container = null;
+    beforeEach(() => {
+        // setup a DOM element as a render target
+        container = document.createElement("div");
+        document.body.appendChild(container);
     });
 
-    Syn.click(wrapper.vm.$el,function () {
-      sinon.assert.calledWith(click);
-      done();
+    afterEach(() => {
+        // cleanup on exiting
+        unmountComponentAtNode(container);
+        container.remove();
+        container = null;
     });
-  })
 
-});
+    it('can receive child',function() {
+        act(() => {
+            function App(){
+                return <Button>按钮</Button>;
+            }
+            render(<App/>,container)
+        })
+        // console.log(container);
+        expect(container).to.contain.html('按钮')
+    })
+
+    it('can click',function () {
+        const clickCb = sinon.spy();
+        act(() => {
+            function App(){
+                return <Button id='test-button' onClick={clickCb}>按钮</Button>;
+            }
+            render(<App/>,container)
+        });
+
+        const button = document.querySelector('button');
+
+        act(() => {
+            button.dispatchEvent(new MouseEvent("click",{bubbles: true}))
+        })
+
+        sinon.assert.calledWith(clickCb)
+    })
+})
+
 ```
 
 ### describe,it函数
@@ -466,24 +453,17 @@ describe('MButton.vue',function () {
 - 这两个函数有什么用？
   为你的测试用例划分区块，一个`describe`是一个大区块，一个`it`是一个小区块，两个函数的第一个参数是对于区块的描述，第二个参数是一个回调函数，指定区块的具体测试内容。
 
-### mount函数
+### act函数
 
-mount函数是`@vue/test-utils`库中的函数
+act函数是`react-dom/test-utils`库中的函数
 
 - 有什么用？
 
-  mount的作用是装载（运行）你的vue组件，相当于如下代码。
+  保证你在断言之前，DOM已经更新
 
-  ```js
-  const constructor =  Vue.extend(MButton)
-  new constructor().$mount()
-  ```
-
-  只有将你的组件运行起来，才可以测试其功能是否正确。
-
-- @vue/test-utils是什么？
-
-  是vue组件测试辅助库，使用细节查看[@vue/test-utils](https://vue-test-utils.vuejs.org/zh/guides/)
+  > React provides a helper called `act()` that makes sure all updates related to these “units” have been processed and applied to the DOM before you make any assertions:
+  
+  
 
 ### expect函数
 
